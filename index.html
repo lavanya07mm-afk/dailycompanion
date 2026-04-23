@@ -3,171 +3,159 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Life OS v2</title>
+<title>Daily Companion ⚡</title>
 <style>
 :root{--bg:#020617;--card:#0f172a;--muted:#1e293b;--text:#e2e8f0;--accent:#22c55e}
-*{box-sizing:border-box}
-body{margin:0;font-family:Inter,system-ui,Arial;background:var(--bg);color:var(--text)}
-.container{max-width:980px;margin:0 auto;padding:20px}
-h1{margin:0 0 10px;text-align:center}
-.sub{opacity:.7;text-align:center;margin-bottom:20px}
-.row{display:grid;grid-template-columns:1fr 1fr;gap:16px}
-.card{background:var(--card);border-radius:14px;padding:16px;box-shadow:0 10px 30px rgba(0,0,0,.25)}
-label{display:block;margin:6px 0}
-input,textarea{width:100%;margin-top:8px;padding:10px;border-radius:8px;border:1px solid #111827;background:#020617;color:var(--text)}
-textarea{min-height:90px}
-button{margin-top:12px;padding:10px 14px;border-radius:10px;border:none;background:var(--accent);cursor:pointer}
-.grid{display:grid;grid-template-columns:repeat(7,1fr);gap:6px;margin-top:10px}
-.day{height:42px;border-radius:6px;background:var(--muted)}
-.done{background:var(--accent)}
-.kpis{display:flex;gap:12px;flex-wrap:wrap}
-.kpi{background:#020617;border:1px solid #111827;border-radius:10px;padding:10px 12px}
-.big{font-size:22px;font-weight:700}
-.character{margin-top:10px;font-size:18px;text-align:center}
-.progress{height:10px;background:#020617;border-radius:999px;overflow:hidden;margin-top:8px}
-.bar{height:100%;width:0%;background:var(--accent)}
-@media(max-width:800px){.row{grid-template-columns:1fr}}
+body{margin:0;font-family:Inter,Arial;background:var(--bg);color:var(--text)}
+.container{max-width:1000px;margin:auto;padding:20px}
+h1{text-align:center}
+.card{background:var(--card);padding:16px;border-radius:12px;margin-top:16px;box-shadow:0 10px 30px rgba(0,0,0,0.3)}
+input,textarea,select{width:100%;margin-top:8px;padding:10px;border-radius:8px;border:none;background:#020617;color:white}
+button{margin-top:10px;padding:8px 12px;border:none;border-radius:8px;background:var(--accent);cursor:pointer}
+.grid{display:grid;grid-template-columns:repeat(8,1fr);gap:5px;margin-top:10px}
+.day{height:30px;background:var(--muted);border-radius:5px;transition: all 0.3s ease}
+.done{background:var(--accent);box-shadow:0 0 10px var(--accent),0 0 20px var(--accent);transform:scale(1.1)}
+.insight{margin-top:10px;padding:10px;background:#020617;border-radius:8px}
 </style>
 </head>
 <body>
 <div class="container">
-  <h1>Life OS ⚡ v2</h1>
-  <div class="sub">small daily inputs → visible identity</div>
+<h1>Daily Companion ⚡</h1>
 
-  <div class="row">
-    <div class="card">
-      <h3>Today</h3>
-      <label><input type="checkbox" id="learning"> Learning / Building (+5 XP)</label>
-      <label><input type="checkbox" id="workout"> Workout (+5 XP)</label>
-      <label><input type="checkbox" id="explore"> Explore / Outside (+8 XP)</label>
-      <label><input type="checkbox" id="planning"> Planning Future (+6 XP)</label>
-      <label><input type="checkbox" id="joy"> Enjoy Small Things (+3 XP)</label>
+<div class="card">
+<h3>Daily Input</h3>
+<label><input type="checkbox" id="learning"> Learning</label>
+<label><input type="checkbox" id="workout"> Workout</label>
+<label><input type="checkbox" id="explore"> Explore</label>
+<label><input type="checkbox" id="planning"> Planning</label>
+<label><input type="checkbox" id="joy"> Joy</label>
 
-      <label>Focused Time (hrs)</label>
-      <input type="number" id="time" placeholder="e.g. 3.5">
+<input id="time" type="number" placeholder="Focused hours">
+<textarea id="notes" placeholder="What happened today..."></textarea>
 
-      <label>Notes</label>
-      <textarea id="notes" placeholder="what did you learn / notice / question..."></textarea>
+<h4>References</h4>
+<input id="linkInput" placeholder="Paste link">
+<button onclick="addLink()">+ Add Link</button>
+<div id="links"></div>
 
-      <label>References</label>
-      <textarea id="refs" placeholder="links, ideas, quotes..."></textarea>
+<button onclick="saveDay()">Save</button>
+</div>
 
-      <button onclick="saveDay()">Save Day</button>
-    </div>
+<div class="card">
+<h3>Character Evolution</h3>
+<div class="grid" id="grid"></div>
+</div>
 
-    <div class="card">
-      <h3>Progress</h3>
-      <div class="kpis">
-        <div class="kpi"><div>Total XP</div><div class="big" id="xp">0</div></div>
-        <div class="kpi"><div>Level</div><div class="big" id="level">1</div></div>
-        <div class="kpi"><div>Streak</div><div class="big" id="streak">0</div></div>
-      </div>
-      <div class="progress"><div class="bar" id="bar"></div></div>
-      <div class="character" id="character">Character: Starter 🌱</div>
+<div class="card">
+<h3>Self-Awareness Engine</h3>
+<div id="insight1" class="insight"></div>
+<div id="insight2" class="insight"></div>
+<div id="insight3" class="insight"></div>
+</div>
 
-      <h4 style="margin-top:16px">Monthly Grid</h4>
-      <div class="grid" id="grid"></div>
-    </div>
-  </div>
-
-  <div class="card" style="margin-top:16px">
-    <h3>Reflection (auto)</h3>
-    <div id="insights" class="sub" style="text-align:left"></div>
-  </div>
 </div>
 
 <script>
-const XP_MAP = {learning:5, workout:5, explore:8, planning:6, joy:3};
-let db = JSON.parse(localStorage.getItem('lifeOSv2')||'{}');
+let db=JSON.parse(localStorage.getItem('dailycompanion')||'{}');
+let tempLinks=[];
 
-function todayKey(){
-  const d=new Date();
-  return d.getFullYear()+"-"+(d.getMonth()+1)+"-"+d.getDate();
+const shape=[
+[0,1,1,1,1,1,1,0],
+[1,1,1,1,1,1,1,1],
+[1,1,0,1,1,0,1,1],
+[1,1,1,1,1,1,1,1],
+[0,1,1,1,1,1,1,0]
+];
+
+function key(){return new Date().toISOString().split('T')[0];}
+
+function addLink(){
+let val=document.getElementById('linkInput').value;
+if(val){tempLinks.push(val);
+let div=document.createElement('div');
+div.innerText=val;
+document.getElementById('links').appendChild(div);
+document.getElementById('linkInput').value='';}
 }
 
 function saveDay(){
-  const key = todayKey();
-  const entry = {
-    learning:learning.checked,
-    workout:workout.checked,
-    explore:explore.checked,
-    planning:planning.checked,
-    joy:joy.checked,
-    time: parseFloat(time.value||0),
-    notes: notes.value,
-    refs: refs.value,
-    ts: Date.now()
-  };
-  db[key]=entry;
-  localStorage.setItem('lifeOSv2', JSON.stringify(db));
-  render();
-}
-
-function calc(){
-  let xp=0, days=Object.keys(db).length;
-  let streak=0;
-  const sorted = Object.keys(db).sort((a,b)=>new Date(a)-new Date(b));
-  let prev=null;
-  sorted.forEach(k=>{
-    const e=db[k];
-    Object.keys(XP_MAP).forEach(k2=>{ if(e[k2]) xp+=XP_MAP[k2]; });
-    if(prev){
-      const diff=(new Date(k)-new Date(prev))/(1000*60*60*24);
-      if(diff===1) streak++; else streak=1;
-    } else streak=1;
-    prev=k;
-  });
-  const level = Math.max(1, Math.floor(xp/50)+1);
-  const next = level*50;
-  const pct = Math.min(100, Math.floor((xp%50)/50*100));
-  return {xp, level, next, pct, days, streak};
-}
-
-function character(level){
-  if(level<3) return 'Starter 🌱';
-  if(level<5) return 'Explorer 🧭';
-  if(level<8) return 'Warrior ⚔️';
-  if(level<12) return 'Elite 🔥';
-  return 'Mythic ⚡';
+let k=key();
+db[k]={
+learning:learning.checked,
+workout:workout.checked,
+explore:explore.checked,
+planning:planning.checked,
+joy:joy.checked,
+time:parseFloat(time.value||0),
+notes:notes.value.toLowerCase(),
+links:tempLinks
+};
+localStorage.setItem('dailycompanion',JSON.stringify(db));
+tempLinks=[];
+document.getElementById('links').innerHTML='';
+render();
 }
 
 function buildGrid(){
-  const el = document.getElementById('grid'); el.innerHTML='';
-  const now = new Date(); const y=now.getFullYear(), m=now.getMonth();
-  const daysInMonth = new Date(y, m+1, 0).getDate();
-  for(let i=1;i<=daysInMonth;i++){
-    const key = y+"-"+(m+1)+"-"+i;
-    const d=document.createElement('div'); d.className='day';
-    if(db[key]) d.classList.add('done');
-    el.appendChild(d);
-  }
+let g=document.getElementById('grid');
+g.innerHTML='';
+let progress=Object.keys(db).length;
+let index=0;
+shape.forEach(row=>{
+row.forEach(cell=>{
+let d=document.createElement('div');
+if(cell===1){
+d.className='day';
+if(index<progress) d.classList.add('done');
+index++;
+}else{d.style.visibility='hidden'}
+g.appendChild(d);
+});
+});
 }
 
-function insights(){
-  const list = Object.values(db);
-  if(list.length<5) return 'Keep going. Patterns need a few days to emerge.';
-  const counts={learning:0,workout:0,explore:0,planning:0,joy:0};
-  let time=0;
-  list.forEach(e=>{
-    Object.keys(counts).forEach(k=>{ if(e[k]) counts[k]++; });
-    time+=e.time||0;
-  });
-  const top = Object.entries(counts).sort((a,b)=>b[1]-a[1])[0][0];
-  const low = Object.entries(counts).sort((a,b)=>a[1]-b[1])[0][0];
-  const avgTime = (time/list.length).toFixed(1);
-  return `You lean towards: ${top}. You avoid: ${low}. Avg focused time: ${avgTime} hrs.`;
+function analyze(){
+let entries=Object.values(db);
+if(entries.length<5){
+return [
+"Keep going. Not enough data yet.",
+"Show up more days to unlock patterns.",
+"Consistency reveals truth."
+];}
+
+let counts={learning:0,workout:0,explore:0,planning:0,joy:0};
+let timeTotal=0;
+let moodGood=0;
+let moodLow=0;
+
+entries.forEach(e=>{
+Object.keys(counts).forEach(k=>{if(e[k]) counts[k]++});
+timeTotal+=e.time||0;
+
+if(e.notes.includes('good')||e.notes.includes('happy')) moodGood++;
+if(e.notes.includes('tired')||e.notes.includes('low')||e.notes.includes('bad')) moodLow++;
+});
+
+let top=Object.entries(counts).sort((a,b)=>b[1]-a[1])[0][0];
+let low=Object.entries(counts).sort((a,b)=>a[1]-b[1])[0][0];
+let avgTime=(timeTotal/entries.length).toFixed(1);
+
+let insight1=`You naturally focus on ${top}. But you avoid ${low}.`;
+let insight2=`Your average focus time is ${avgTime} hours.`;
+
+let insight3="";
+if(moodLow>moodGood) insight3="You often feel low. Try increasing Explore or Joy.";
+else insight3="Your notes show stable or positive mood.";
+
+return [insight1,insight2,insight3];
 }
 
 function render(){
-  const s = calc();
-  xp.innerText = s.xp;
-  level.innerText = s.level;
-  streak.innerText = s.streak;
-  bar.style.width = s.pct + '%';
-  characterEl = document.getElementById('character');
-  characterEl.innerText = 'Character: ' + character(s.level);
-  document.getElementById('insights').innerText = insights();
-  buildGrid();
+buildGrid();
+let ins=analyze();
+document.getElementById('insight1').innerText=ins[0];
+document.getElementById('insight2').innerText=ins[1];
+document.getElementById('insight3').innerText=ins[2];
 }
 
 render();
